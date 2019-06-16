@@ -25,14 +25,14 @@ logger.addHandler(ch)
 fps_time = 0
 
 class VideoCamera(object):
-    def __init__(self, link):
+    def __init__(self):
         self.w, self.h = model_wh('432x368')
         if self.w > 0 and self.h > 0:
             self.e = TfPoseEstimator(get_graph_path('mobilenet_thin'), target_size=(self.w, self.h))
         else:
             self.e = TfPoseEstimator(get_graph_path('mobilenet_thin'), target_size=(100, 100))
         self.w, self.h = model_wh('432x368')
-        self.streams = streamlink.streams(link)#https://www.twitch.tv/blondynkitezgraja')
+        self.streams = streamlink.streams('https://www.twitch.tv/zpinkman_')#https://www.twitch.tv/blondynkitezgraja')
         self.url = self.streams['360p'].url
         self.cam = cv2.VideoCapture(self.url)
         self.i = 0
@@ -63,6 +63,7 @@ class VideoCamera(object):
         while True:
             (self.grabbed, self.frame) = self.cam.read()
 
+video = VideoCamera() 
 
 # Create your views here.
 def video_upload(request):
@@ -74,7 +75,7 @@ def video_upload(request):
 
 def gen(camera):
     while True:
-        frame = video.get_frame()
+        frame = camera.get_frame()
         yield(b'--frame\r\n'
               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n\r\n')
 
