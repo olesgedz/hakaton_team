@@ -298,7 +298,7 @@ import sys
 import cv2
 import time
 import os
-
+import matplotlib.pyplot as plt
 from estimator import TfPoseEstimator
 from networks import get_graph_path, model_wh
 from lifting.prob_model import Prob3dPose
@@ -345,9 +345,21 @@ class Terrain(object):
 
         while True:
             ret_val, self.image = self.cam.read()
-            keypoints  = self.mesh()
+            pose_3d = self.mesh()
+            keypoints  = pose_3d[0].transpose()
+            keypoints = keypoints / 80
             print(keypoints)
-            
+            for i, single_3d in enumerate(pose_3d):
+                #plot_pose(single_3d)
+                avrg = []
+                number = 0
+                for point in single_3d:
+                    avrg += point[2]
+                    print(point[2])
+                    number+=1   
+            # print("\n new \n")
+            print(avrg)   
+            plt.show()
             if cv2.waitKey(1) == 27: 
                 break
         cv2.destroyAllWindows()
@@ -375,8 +387,8 @@ class Terrain(object):
         try:
             transformed_pose2d, weights = self.poseLifting.transform_joints(pose_2d_mpiis, visibilities)
             pose_3d = self.poseLifting.compute_3d(transformed_pose2d, weights)
-            keypoints = pose_3d[0].transpose()
-            return keypoints / 80
+        
+            return  pose_3d
         except:
             pass
             return 0
