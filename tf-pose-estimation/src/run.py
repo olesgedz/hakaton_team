@@ -1,7 +1,7 @@
 import argparse
 import logging
 import time
-
+import os
 import common
 import cv2
 import numpy as np
@@ -70,13 +70,21 @@ if __name__ == '__main__':
     visibilities = np.array(visibilities)
     transformed_pose2d, weights = poseLifting.transform_joints(pose_2d_mpiis, visibilities)
     pose_3d = poseLifting.compute_3d(transformed_pose2d, weights)
-    print(pose_3d)
+    print("x: ")
+    print(pose_3d[0][0])
+    print("y: ")
+    print(pose_3d[0][1])
+    print("z: ")
+    print(pose_3d[0][2])
+
+    pose3d_tr = np.array(pose_3d[0]).transpose()
+    print(pose3d_tr)
     cv2.waitKey()
     # import matplotlib
     # matplotlib.use('TkAgg')
-    import matplotlib.pyplot as plt
+    # import matplotlib.pyplot as plt
 
-    fig = plt.figure()
+    # fig = plt.figure()
     # a = fig.add_subplot(2, 2, 1)
     # a.set_title('Result')
     # plt.imshow(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
@@ -104,8 +112,9 @@ if __name__ == '__main__':
     # plt.imshow(tmp2_even, cmap=plt.cm.gray, alpha=0.5)
     # plt.colorbar()
 
-    for i, single_3d in enumerate(pose_3d):
-        plot_pose(single_3d)
-    plt.show()
+    # for i, single_3d in enumerate(pose_3d):
+    #     plot_pose(single_3d)
+    #     print("\n new \n")
+    # plt.show()
 
-    pass
+    # pass

@@ -24,41 +24,47 @@ class Terrain(object):
         Initialize the graphics window and mesh surface
         """
 
-        # setup the view window
-        self.app = QtGui.QApplication(sys.argv)
-        self.window = gl.GLViewWidget()
-        self.window.setWindowTitle('Terrain')
-        self.window.setGeometry(0, 110, 1920, 1080)
-        self.window.setCameraPosition(distance=30, elevation=12)
-        self.window.show()
+        #setup the view window
+        # self.app = QtGui.QApplication(sys.argv)
+        # self.window = gl.GLViewWidget()
+        # self.window.setWindowTitle('Terrain')
+        # self.window.setGeometry(0, 110, 1920, 1080)
+        # self.window.setCameraPosition(distance=30, elevation=12)
+        # self.window.show()
 
-        gx = gl.GLGridItem()
-        gy = gl.GLGridItem()
-        gz = gl.GLGridItem()
-        gx.rotate(90, 0, 1, 0)
-        gy.rotate(90, 1, 0, 0)
-        gx.translate(-10, 0, 0)
-        gy.translate(0, -10, 0)
-        gz.translate(0, 0, -10)
-        self.window.addItem(gx)
-        self.window.addItem(gy)
-        self.window.addItem(gz)
+        # gx = gl.GLGridItem()
+        # gy = gl.GLGridItem()
+        # gz = gl.GLGridItem()
+        # gx.rotate(90, 0, 1, 0)
+        # gy.rotate(90, 1, 0, 0)
+        # gx.translate(-10, 0, 0)
+        # gy.translate(0, -10, 0)
+        # gz.translate(0, 0, -10)
+        # self.window.addItem(gx)
+        # self.window.addItem(gy)
+        # self.window.addItem(gz)
 
         model = 'mobilenet_thin_432x368'
         camera = 0
         w, h = model_wh(model)
-        self.e = TfPoseEstimator(get_graph_path(model), target_size=(w, h))
-        self.cam = cv2.VideoCapture(camera)
-        ret_val, image = self.cam.read()
-        self.poseLifting = Prob3dPose('./src/lifting/models/prob_model_params.mat')
-        keypoints = self.mesh(image)
+        print(get_graph_path('mobilenet_thin_432x368'))
 
-        self.points = gl.GLScatterPlotItem(
-            pos=keypoints,
-            color=pg.glColor((0, 255, 0)),
-            size=15
-        )
-        self.window.addItem(self.points)
+        self.e = TfPoseEstimator(get_graph_path('mobilenet_thin_432x368'), target_size=(w, h)) #error
+        self.cam = cv2.VideoCapture(camera)
+
+      
+
+        self.poseLifting = Prob3dPose('./src/lifting/models/prob_model_params.mat')
+
+        while True:
+            ret_val, image = self.cam.read()
+            keypoints  = self.mesh(image)
+            print(keypoints)
+            cv2.imshow('tf-pose-estimation result', image)
+            if cv2.waitKey(1) == 27: 
+                break
+        cv2.destroyAllWindows()
+        # self.window.addItem(self.points)
 
     def mesh(self, image):
         image_h, image_w = image.shape[:2]
@@ -78,12 +84,14 @@ class Terrain(object):
 
         pose_2d_mpiis = np.array(pose_2d_mpiis)
         visibilities = np.array(visibilities)
-        transformed_pose2d, weights = self.poseLifting.transform_joints(pose_2d_mpiis, visibilities)
-        pose_3d = self.poseLifting.compute_3d(transformed_pose2d, weights)
-
-        keypoints = pose_3d[0].transpose()
-
-        return keypoints / 80
+        try:
+            transformed_pose2d, weights = self.poseLifting.transform_joints(pose_2d_mpiis, visibilities)
+            pose_3d = self.poseLifting.compute_3d(transformed_pose2d, weights)
+            keypoints = pose_3d[0].transpose()
+            return keypoints / 80
+        except:
+            pass
+            return 0
 
     def update(self):
         """
@@ -115,6 +123,6 @@ class Terrain(object):
 
 
 if __name__ == '__main__':
-    os.chdir('..')
+    #os.chdir('..')
     t = Terrain()
-    t.animation()
+    #t.animation()
