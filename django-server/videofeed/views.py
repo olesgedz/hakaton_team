@@ -25,18 +25,18 @@ logger.addHandler(ch)
 fps_time = 0
 
 class VideoCamera(object):
-    def __init__(self):
+    def __init__(self, link):
         self.w, self.h = model_wh('432x368')
         if self.w > 0 and self.h > 0:
             self.e = TfPoseEstimator(get_graph_path('mobilenet_thin'), target_size=(self.w, self.h))
         else:
             self.e = TfPoseEstimator(get_graph_path('mobilenet_thin'), target_size=(100, 100))
         self.w, self.h = model_wh('432x368')
-        self.streams = streamlink.streams('https://www.twitch.tv/blondynkitezgraja')#https://www.twitch.tv/blondynkitezgraja')
-        # #print(streams)
+        self.streams = streamlink.streams(link)#https://www.twitch.tv/blondynkitezgraja')
         self.url = self.streams['360p'].url
         self.cam = cv2.VideoCapture(self.url)
         self.i = 0
+        self.help = False
         (self.grabbed, self.frame) = self.cam.read()
         self.humans = self.e.inference(self.frame, resize_to_default=(self.w > 0 and self.h > 0), upsample_size=4.0)
         self.dim = (656, 368)
@@ -52,7 +52,9 @@ class VideoCamera(object):
             self.humans = self.e.inference(image, resize_to_default=(self.w > 0 and self.h > 0), upsample_size=4.0)
             image = TfPoseEstimator.draw_humans(image, self.humans, imgcopy=False)
         else:
-            image = TfPoseEstimator.draw_humans(image, self.humans, imgcopy=False)  
+            image = TfPoseEstimator.draw_humans(image, self.humans, imgcopy=False)
+        if self.help == True:
+            image = cv2.putText(image, 'ALARM', (30, 100), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (128,34,34), lineType = cv2.LINE_AA)
         self.i += 1
         ret, jpeg = cv2.imencode('.jpg', image)
         return jpeg.tobytes()
@@ -70,15 +72,11 @@ def video_upload(request):
         form = UploadVideoFileForm()
     return render(request, 'uploadvideo.html', {'form': form})
 
-video = VideoCamera()
-
-
 def gen(camera):
     while True:
         frame = video.get_frame()
         yield(b'--frame\r\n'
               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n\r\n')
-
 
 @gzip_page
 def livefe(request):
