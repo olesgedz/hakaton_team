@@ -351,7 +351,7 @@ class Terrain(object):
             if cv2.waitKey(1) == 27: 
                 break
         cv2.destroyAllWindows()
-        # self.window.addItem(self.points)
+        #self.window.addItem(self.points)
 
     def mesh(self):
         image_h, image_w = self.image.shape[:2]
